@@ -39,7 +39,10 @@ ARG SPARK_VERSION=2.0.0
 ARG SPARK_ARCHIVE=http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 ENV SPARK_HOME /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
 
-ENV PATH $PATH:${SPARK_HOME}/bin
 RUN curl -s ${SPARK_ARCHIVE} | tar -xz -C /usr/local/
+RUN cp /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell-orig
+COPY spark-shell-flamegraph /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell
+COPY lorem-ipsum.txt /tmp/lorem-ipsum.txt
+ENV PATH $PATH:${SPARK_HOME}/bin
 
 WORKDIR $SPARK_HOME

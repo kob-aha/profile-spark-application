@@ -1,5 +1,6 @@
-spark-master:
-    image: spark:2.0.0
+spark-master:    
+    build: .
+    #image: spark:2.0.0
     command: bin/spark-class org.apache.spark.deploy.master.Master -h spark-master
     hostname: spark-master
     environment:
@@ -24,8 +25,9 @@ spark-master:
       - ./conf/spark-master:/conf
       - ./data:/tmp/data  
 
-spark-worker-1:
-    image: spark:2.0.0
+spark-worker-1:    
+    build: .
+    #image: spark:2.0.0
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     hostname: spark-worker-1
     environment:

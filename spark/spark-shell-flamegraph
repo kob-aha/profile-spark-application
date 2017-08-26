@@ -1,0 +1,46 @@
+#!/bin/bash
+
+function run_spark_shell() {
+  spark_args=()
+  jars=$deps_install_dir/statsd-jvm-profiler.jar
+  while [[ $# > 0 ]]; do
+    case "$1" in
+      --jars) jars="$jars,$2"
+        shift
+        ;;
+      *) spark_args+=("$1")
+        [[ "$1" == *.jar ]] && flamegraph_title="$1"
+        ;;
+    esac
+    shift
+  done
+
+  spark_cmd=(spark-shell-orig)
+  spark_cmd+=(--jars)
+  spark_cmd+=("$jars")
+  spark_cmd+=(--conf)
+  spark_cmd+=("spark.executor.extraJavaOptions=-javaagent:statsd-jvm-profiler.jar=server=${influxdb_host},port=${influxdb_port},reporter=InfluxDBReporter,database=profiler,username=profiler,password=profiler,prefix=sparkapp,tagMapping=spark")
+  spark_cmd+=(${spark_args[@]})
+
+  echo -e "[$(date +%FT%T)] Executing: ${spark_cmd[@]}"
+  "${spark_cmd[@]}"
+}
+
+function generate_flamegraph() {
+  pushd $graph_folder
+  rm -rf stack_traces
+  python $deps_install_dir/influxdb_dump.py -o $local_ip -r $influx_http_port -u profiler -p profiler -d profiler -t spark -e sparkapp -x stack_traces
+  perl $install_dir/flamegraph.pl --title "$flamegraph_title" stack_traces/all_*.txt > flamegraph.svg
+  rm -rf stack_traces
+  echo -e "[$(date +%FT%T)] Created flamegraph: $(pwd)/flamegraph.svg"
+  popd
+}
+
+graph_folder=/tmp/graph
+deps_install_dir=/
+influxdb_host=influxdb
+influxdb_port=8860
+flamegraph_title="Spark Application"
+
+run_spark_shell "$@"
+generate_flamegraph

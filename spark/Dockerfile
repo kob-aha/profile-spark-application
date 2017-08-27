@@ -14,7 +14,6 @@ RUN apt-get update \
 RUN pip -q install --user influxdb blist \
  && wget -qc https://github.com/etsy/statsd-jvm-profiler/releases/download/2.1.0/statsd-jvm-profiler-2.1.0-jar-with-dependencies.jar \
  && ln -sf statsd-jvm-profiler-2.1.0-jar-with-dependencies.jar statsd-jvm-profiler.jar \
- && wget -qc https://raw.githubusercontent.com/aviemzur/statsd-jvm-profiler/master/visualization/influxdb_dump.py \
  && wget -qc https://raw.githubusercontent.com/brendangregg/FlameGraph/master/flamegraph.pl
 
 # JAVA
@@ -41,8 +40,10 @@ ENV SPARK_HOME /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
 
 RUN curl -s ${SPARK_ARCHIVE} | tar -xz -C /usr/local/
 RUN cp /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell-orig
+ENV PATH $PATH:${SPARK_HOME}/bin
+
 COPY spark-shell-flamegraph /usr/local/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-shell
 COPY lorem-ipsum.txt /tmp/lorem-ipsum.txt
-ENV PATH $PATH:${SPARK_HOME}/bin
+COPY influxdb_dump.py /influxdb_dump.py
 
 WORKDIR $SPARK_HOME

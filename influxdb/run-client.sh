@@ -1,5 +1,6 @@
 #!/bin/bash
 
-SERVER_HOSTNAME=spark_influxdb_1
+FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $FOLDER/env.sh
 
-docker run --rm --link=$SERVER_HOSTNAME:influxdb -it influxdb:1.3.4 influx -host influxdb
+docker run --rm --link=$SERVER_NAME:influxdb -it influxdb:${VERSION} influx -host influxdb
